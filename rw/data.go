@@ -1,31 +1,32 @@
 package rw
 
-import (
-	"fmt"
-)
-
 type Data struct {
         m map[string]int
-        read_count int
 }
 
-func (s *Data) New() {
-        s.m = make(map[string]int)
+func NewData() Data {
+        var d Data 
+        d.m = make(map[string]int)
+        return d
 }
 
-func (s *Data) Read(key string) int {
-        v := s.m[key]
-        fmt.Println("Read key", key, "value is", v)
-        return v
+func (d *Data) Read(key string) int {
+        return d.m[key]
 }
 
-func (s *Data) Write(key string, value int) {
-        s.m[key] = value
-        fmt.Println("Wrote key", key, "to value", value)
+func (d *Data) Write(key string, value int) {
+        d.m[key] = value
 }
 
-func (s *Data) Values() {
-        for k, v := range s.m {
+func (d *Data) Incr(key string) int {
+        d.m[key]++
+        return d.m[key]
+}
+
+/*
+func (d *Data) Values() {
+        for k, v := range d.m {
                 fmt.Println("Key:", k, "Value:", v)
         }
 }
+*/
