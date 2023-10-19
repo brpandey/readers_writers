@@ -22,11 +22,3 @@ func (d *Data) Incr(key string) int {
         d.m[key]++
         return d.m[key]
 }
-
-/*
-func (d *Data) Values() {
-        for k, v := range d.m {
-                fmt.Println("Key:", k, "Value:", v)
-        }
-}
-*/

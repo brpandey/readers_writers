@@ -26,7 +26,7 @@ func (r* Reader) Read(key string) {
 }
 
 func (r* Reader) Loop(messages chan string) {
-        fmt.Println("In reader loop")
+        fmt.Println("In reader loop, r.key is ", r.key)
         defer r.wg.Done()
 
         for {
