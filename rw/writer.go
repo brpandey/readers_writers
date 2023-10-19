@@ -1,9 +1,8 @@
 package rw
 
 import (
-        "sync"
-        "time"
-        "fmt"
+        //        "time"
+        "strconv"
 )
 
 var MAX_WRITES = 3
@@ -13,11 +12,10 @@ type Writer struct {
         shared *Shared
         key string
         writes int
-        wg *sync.WaitGroup
 }
 
-func NewWriter(uid int, key string, sd *Shared, wg *sync.WaitGroup) Writer {
-        return Writer{id: uid, key: key, shared: sd, wg: wg}
+func NewWriter(uid int, key string, sd *Shared) Writer {
+        return Writer{id: uid, key: key, shared: sd}
 }
 
 func (w *Writer) Write(key string, value int) {
@@ -25,24 +23,21 @@ func (w *Writer) Write(key string, value int) {
         w.writes += 1
 }
 
-func (w *Writer) Incr(key string) {
-        w.shared.Incr(key)
+func (w *Writer) Incr(key string) int {
+        v := w.shared.Incr(key)
         w.writes += 1
+        return v
 }
 
 func (w* Writer) Loop(messages chan string) {
-        fmt.Println("In writer loop")
-        defer w.wg.Done()
-
         for {
                 v := w.Incr(w.key)
-                msg := "Incr key value" + w.key + "value is" + v + "w" + w.id
+                msg := "W" + strconv.Itoa(w.id) + " Incr " + w.key + "'s value by 1 => " + strconv.Itoa(v)
                 messages <- msg
 
                 if w.writes == MAX_WRITES {
+                        messages <- "Q"
                         return
                 }
-
-                time.Sleep(50)
         }
 }

@@ -1,7 +1,6 @@
 package main 
 
 import (
-        "sync"
         "fmt"
         "github.com/brpandey/readers_writers/rw"
 )
@@ -10,43 +9,51 @@ func main() {
         d := rw.NewData()
         var read_write rw.ReadWrite = &d
         sd := rw.NewShared(&read_write)
-        var wg sync.WaitGroup
 
-        keys := []string{"caramel", "purple", "obsidian"}
-        var roles []rw.MiniActor
+        // keys used to read out of shared data structure
+        keys := []string{"caramel", "purple", "obsidian", "graphite", "atlantis"}
+        var roles []rw.MiniActor // mini actors that either read or write
 
         messages := make(chan string)
 
         // add readers
         for i := 0; i < len(keys); i++ {
-                wg.Add(1)
-                r := rw.NewReader(i, keys[i], &sd, &wg)
+                r := rw.NewReader(i, keys[i], &sd)
                 roles = append(roles, &r)
         }
 
         // add writers
         for i := 0; i < 2; i++ {
-                wg.Add(1)
-                w := rw.NewWriter(i, keys[i], &sd, &wg)
+                w := rw.NewWriter(i, keys[i], &sd)
                 roles = append(roles, &w)
         }
 
-        fmt.Println("roles", roles)
-
+        // spawn go routines for each of the roles
         for i := 0; i < len(roles); i++ {
-                fmt.Println("About to spawn go routine", i)
-                actor := roles[i]
-                fmt.Println("actor is", actor)
-
-                go actor.Loop(messages)
+                go roles[i].Loop(messages)
         }
 
+        fmt.Println("\nReader (R) and Writer (W) interplay:")
+
+        var msg string
+        finished := len(roles)
+        var count int
+
+Outer:
         for {
                 select {
-                case msg <- messages:
-                        fmt.Println("~~~", msg)
+                case msg = <- messages:
+                        if msg == "Q" {
+                                count += 1
+                        } else {
+                                fmt.Println("~~~", msg)
+                        }
+                default:
+                        if count == finished {
+                                break Outer
+                        }
                 }
         }
 
-        wg.Wait() // block until wg value down to 0
+        fmt.Println("")
 }

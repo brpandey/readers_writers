@@ -1,9 +1,8 @@
 package rw
 
 import (
-        "sync"
-        "time"
-        "fmt"
+        //        "time"
+        "strconv"
 )
 
 var MAX_READS = 4
@@ -13,31 +12,27 @@ type Reader struct {
         shared *Shared
         reads int
         key string
-        wg *sync.WaitGroup
 }
 
-func NewReader(uid int, key string, sd *Shared, wg *sync.WaitGroup) Reader {
-        return Reader{id: uid, key: key, shared: sd, wg: wg}
+func NewReader(uid int, key string, sd *Shared) Reader {
+        return Reader{id: uid, key: key, shared: sd}
 }
 
-func (r* Reader) Read(key string) {
-        r.shared.Read(key)
+func (r* Reader) Read(key string) int {
+        v := r.shared.Read(key)
         r.reads += 1
+        return v
 }
 
 func (r* Reader) Loop(messages chan string) {
-        fmt.Println("In reader loop, r.key is ", r.key)
-        defer r.wg.Done()
-
         for {
                 v := r.Read(r.key)
-                msg := "Read key" + r.key + "value is" + v + "r" + r.id
+                msg := "R" + strconv.Itoa(r.id) + " Read " + r.key + " -> " + strconv.Itoa(v)
                 messages <- msg
 
                 if r.reads == MAX_READS {
+                        messages <- "Q"
                         return
                 }
-
-                time.Sleep(50)
         }
 }

@@ -1,9 +1,9 @@
 package rw
 
 type ReadWrite interface {
-        Read(key string, uid int) int
-        Write(key string, value int, uid int)
-        Incr(key string, uid int) int
+        Read(key string) int
+        Write(key string, value int)
+        Incr(key string) int
 }
 
 
